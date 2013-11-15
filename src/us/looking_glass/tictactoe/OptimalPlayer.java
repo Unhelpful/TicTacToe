@@ -69,7 +69,6 @@ public class OptimalPlayer extends Player {
 
     public final class PlayerInstance extends Player.PlayerInstance {
         private static final long serialVersionUID = 1;
-        private Board[] history = new Board[9];
         private byte turn = 0;
 
         PlayerInstance(Game game, int player) {
@@ -94,9 +93,6 @@ public class OptimalPlayer extends Player {
         @Override
         public Point getMove() {
             Board board = game().board();
-            if (turn < game().turn()) {
-                history[turn++] = new Board(board);
-            }
             int player = player();
             Point[] moves = board.getLegalMoves();
             Point bestMove = null;
@@ -112,7 +108,6 @@ public class OptimalPlayer extends Player {
                 cur.play(moves[i], player());
                 int score = score(cur);
                 if (score > bestScore) {
-                    history[turn] = cur;
                     bestMove = moves[i];
                     bestScore = score;
                 }
@@ -125,8 +120,6 @@ public class OptimalPlayer extends Player {
         public void finish(int status) {
             if (status != -1)
                 return;
-            if (turn < game().turn())
-                history[turn++] = game().board();
         }
     }
 }

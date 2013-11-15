@@ -69,20 +69,6 @@ public abstract class LMSPlayerBase extends Player {
             scores = new double[5];
         }
 
-        PlayerInstance(Game game, int player, ObjectInput oi) throws IOException, ClassNotFoundException {
-            super(game, player);
-            int version = oi.readInt();
-            switch (version) {
-                case 1:
-                    this.boards = (Board[]) oi.readObject();
-                    this.features = (byte[][]) oi.readObject();
-                    this.scores = (double[]) oi.readObject();
-                    this.turn = oi.readByte();
-                default:
-                    throw new IOException("invalid version field");
-            }
-        }
-
         public Point getMove() {
             Board board = game().board();
             int player = player();

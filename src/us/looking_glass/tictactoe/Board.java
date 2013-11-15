@@ -37,6 +37,10 @@ public class Board implements Serializable {
         state = 0;
     }
 
+    public Board(int state) {
+        this.state = state;
+    }
+
     public int getContents() {
         return state & contentsMask;
     }

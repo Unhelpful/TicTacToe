@@ -64,14 +64,12 @@ public class BeanCounterPlayer extends Player implements Serializable {
             return false;
         if (aBeans == loss)
             return true;
+        if (aBeans == draw)
+            return true;
+        if (bBeans == draw)
+            return false;
         int aSum = sum(aBeans);
         int bSum = sum(bBeans);
-        if (aBeans == draw) {
-            if (bBeans == draw)
-                return false;
-            else
-                return get(bBeans, 0) << 1 < bSum;
-        }
         if (bBeans == draw)
             return get(aBeans, 0) << 1 < aSum;
         if (get(aBeans, 2) * bSum < get(bBeans, 2) * aSum)
@@ -136,7 +134,8 @@ public class BeanCounterPlayer extends Player implements Serializable {
                     bestMove = moves[i];
                 }
             }
-            if (getScores(bestBoard.stateID()) == loss) {
+            short score = getScores(bestBoard.stateID());
+            if (score == loss) {
                 for (int i = 0; i < IDs.length; i++) {
                     scores.remove(IDs[i]);
                 }
@@ -149,7 +148,6 @@ public class BeanCounterPlayer extends Player implements Serializable {
         @Override
         public void finish(int status) {
             int incIndex = status + 1;
-            status -= 2;
             scores.put(history[--turn], (short) (status - 2));
             for (int i = 0; i < turn; i++)
                 incScore(history[i], incIndex);
