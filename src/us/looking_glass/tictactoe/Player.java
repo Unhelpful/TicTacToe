@@ -16,14 +16,13 @@
 
 package us.looking_glass.tictactoe;
 
-import org.apache.commons.math3.random.RandomGenerator;
-import org.apache.commons.math3.random.Well1024a;
+import us.looking_glass.util.Well1024a;
 
 import java.io.Serializable;
 import java.util.Random;
 
 public abstract class Player implements Serializable {
-    public static final RandomGenerator prng;
+    public static final Well1024a prng;
     private static final long serialVersionUID = 1;
 
     static {
@@ -33,8 +32,8 @@ public abstract class Player implements Serializable {
         for (int i = 0; i < 32; i++) {
             seed[i] = random.nextInt();
         }
-        prng = new Well1024a(seed);
-
+        prng = new Well1024a();
+        prng.setSeed(seed);
     }
 
     public PlayerInstance newPlayer(Game game, int player) {
