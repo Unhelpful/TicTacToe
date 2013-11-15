@@ -115,11 +115,5 @@ public class OptimalPlayer extends Player {
             turn++;
             return bestMove;
         }
-
-        @Override
-        public void finish(int status) {
-            if (status != -1)
-                return;
-        }
     }
 }
