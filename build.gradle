@@ -1,0 +1,9 @@
+apply plugin: 'java'
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+dependencies {
+    compile project(':util')
+    compile group: 'net.sf.trove4j', name: 'trove4j', version: '3.0.3'
+}

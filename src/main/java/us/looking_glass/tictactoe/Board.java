@@ -115,7 +115,7 @@ public class Board implements Serializable {
         return Integer.bitCount(getContents());
     }
 
-    private int getOffset(int x, int y) {
+    private static int getOffset(int x, int y) {
         if (x < 0 || x > 2 || y < 0 || y > 2)
             throw new IllegalArgumentException("Coordinates off board");
         return (x << 1) + (y * 6);
@@ -161,15 +161,22 @@ public class Board implements Serializable {
         return Arrays.copyOf(result, count);
     }
 
-    public int get(int x, int y) {
+    public static int get(int state, int x, int y) {
         return (state >> getOffset(x, y)) & 3;
+    }
+    public int get(int x, int y) {
+        return get(state, x, y);
     }
 
     public String toString() {
+        return toString(getContents());
+    }
+
+    public static String toString(int state) {
         StringBuffer result = new StringBuffer();
         for (int y = 0; y < 3; y++) {
             for (int x = 0; x < 3; x++) {
-                result.append(playerCharsRep.charAt(get(x, y)));
+                result.append(playerCharsRep.charAt(get(state, x, y)));
             }
         }
         return result.toString();

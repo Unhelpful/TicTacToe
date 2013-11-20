@@ -80,6 +80,11 @@ public class BeanCounterPlayer extends Player implements Serializable {
     }
 
     @Override
+    public boolean saveable() {
+        return true;
+    }
+
+    @Override
     public Player.PlayerInstance newPlayer(Game game, int player) {
         return new PlayerInstance(game, player);
     }

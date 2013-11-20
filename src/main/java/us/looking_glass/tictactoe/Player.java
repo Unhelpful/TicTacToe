@@ -21,7 +21,7 @@ import us.looking_glass.util.Well1024a;
 import java.io.Serializable;
 import java.util.Random;
 
-public abstract class Player implements Serializable {
+public class Player implements Serializable {
     public static final Well1024a prng;
     private static final long serialVersionUID = 1;
 
@@ -38,6 +38,10 @@ public abstract class Player implements Serializable {
 
     public PlayerInstance newPlayer(Game game, int player) {
         return new PlayerInstance(game, player);
+    }
+
+    public boolean saveable() {
+        return false;
     }
 
     public class PlayerInstance implements Serializable {
