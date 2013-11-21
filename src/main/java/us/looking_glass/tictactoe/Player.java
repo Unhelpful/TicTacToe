@@ -45,6 +45,8 @@ public class Player implements Serializable {
     }
 
     public class PlayerInstance implements Serializable {
+        private static final long serialVersionUID = 1;
+
         private final Game game;
         private final byte player;
 
