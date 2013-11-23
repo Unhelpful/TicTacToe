@@ -37,7 +37,7 @@ public abstract class LMSPlayerBase extends Player {
         Arrays.fill(weights, .1);
     }
 
-    protected abstract byte[] features(Board board);
+    protected abstract byte[] features(int board);
 
     private int playerOffset(int player) {
         return (player - 1) * (featureSize + 1);
@@ -62,45 +62,39 @@ public abstract class LMSPlayerBase extends Player {
 
     public final class PlayerInstance extends Player.PlayerInstance implements Serializable {
         private final static long serialVersionUID = 1;
-        private final Board[] boards;
         private final byte[][] features;
         private final double[] scores;
         private byte turn = 0;
 
         PlayerInstance(Game game, int player) {
             super(game, player);
-            boards = new Board[5];
             features = new byte[5][];
             scores = new double[5];
         }
 
-        public Point getMove() {
-            Board board = game().board();
+        public int getMove() {
+            int board = game().board();
             int player = player();
-            Point[] moves = board.getLegalMoves();
+            int[] moves = Board.getLegalMoves(board);
             double bestScore = Float.NEGATIVE_INFINITY;
-            Board bestBoard = null;
-            Point bestMove = null;
+            int bestMove = -1;
             byte[] bestFeatures = null;
             for (int i = 0; i < moves.length; i++) {
                 int rnd = prng.nextInt(moves.length - i) + i;
                 if (rnd > i) {
-                    Point tmp = moves[i];
-                    moves[i] = moves[rnd];
-                    moves[rnd] = tmp;
+                    moves[i] ^= moves[rnd];
+                    moves[rnd] ^= moves[i];
+                    moves[i] ^= moves[rnd];
                 }
-                Board cur = new Board(board);
-                cur.play(moves[i], player);
+                int cur = Board.play(board, moves[i], player);
                 byte[] features = features(cur);
                 double score = score(features, player);
                 if (score > bestScore) {
                     bestScore = score;
                     bestFeatures = features;
-                    bestBoard = cur;
                     bestMove = moves[i];
                 }
             }
-            boards[turn] = bestBoard;
             features[turn] = bestFeatures;
             scores[turn] = bestScore;
             turn++;

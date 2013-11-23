@@ -19,13 +19,11 @@ package us.looking_glass.tictactoe;
 public class OptimalPlayer extends Player {
     private static final long serialVersionUID = 1;
 
-    protected static byte[] ranks(Board board) {
+    protected static byte[] ranks(int board) {
         byte[] ranks = new byte[7];
-        ranks[0] = (byte) board.countPlayer(1);
-        ranks[1] = (byte) board.countPlayer(2);
         for (int i = 0; i < 8; i++) {
-            int count1 = board.countRow(i, 1);
-            int count2 = board.countRow(i, 2);
+            int count1 = Board.countRow(board, i, 1);
+            int count2 = Board.countRow(board, i, 2);
             if (count2 == 0) {
                 switch (count1) {
                     case 3:
@@ -75,7 +73,7 @@ public class OptimalPlayer extends Player {
             super(game, player);
         }
 
-        private final int score(Board board) {
+        private final int score(int board) {
             byte[] ranks = ranks(board);
             int score = 0;
             int myBase = (player() - 1) * 3;
@@ -91,21 +89,20 @@ public class OptimalPlayer extends Player {
         }
 
         @Override
-        public Point getMove() {
-            Board board = game().board();
+        public int getMove() {
+            int board = game().board();
             int player = player();
-            Point[] moves = board.getLegalMoves();
-            Point bestMove = null;
+            int[] moves = Board.getLegalMoves(board);
+            int bestMove = -1;
             int bestScore = -1;
             for (int i = 0; i < moves.length; i++) {
                 int rnd = prng.nextInt(moves.length - i) + i;
                 if (rnd > i) {
-                    Point tmp = moves[i];
-                    moves[i] = moves[rnd];
-                    moves[rnd] = tmp;
+                    moves[i] ^= moves[rnd];
+                    moves[rnd] ^= moves[i];
+                    moves[i] ^= moves[rnd];
                 }
-                Board cur = new Board(board);
-                cur.play(moves[i], player());
+                int cur = Board.play(board, moves[i], player());
                 int score = score(cur);
                 if (score > bestScore) {
                     bestMove = moves[i];

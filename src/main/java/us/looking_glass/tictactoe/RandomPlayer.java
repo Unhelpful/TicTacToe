@@ -31,8 +31,8 @@ public class RandomPlayer extends Player {
         }
 
         @Override
-        public Point getMove() {
-            Point[] moves = game().board().getLegalMoves();
+        public int getMove() {
+            int[] moves = Board.getLegalMoves(game().board());
             return moves[prng.nextInt(moves.length)];
         }
     }

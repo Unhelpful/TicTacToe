@@ -51,11 +51,11 @@ public class BeanCounterPlayer extends Player implements Serializable {
     }
 
     private boolean
-    compareBoards(Board a, Board b) {
-        if (a == null)
+    compareBoards(int a, int b) {
+        if (a == -1)
             return true;
-        short aBeans = getScores(a.stateID());
-        short bBeans = getScores(b.stateID());
+        short aBeans = getScores(Board.stateID(a));
+        short bBeans = getScores(Board.stateID(b));
         if (aBeans == win)
             return false;
         if (bBeans == win)
@@ -115,38 +115,37 @@ public class BeanCounterPlayer extends Player implements Serializable {
         }
 
         @Override
-        public Point getMove() {
+        public int getMove() {
             int player = game().getCurrentPlayer();
-            Board board = game().board();
-            Point[] moves = board.getLegalMoves();
-            Board bestBoard = null;
-            Point bestMove = null;
+            int board = game().board();
+            int[] moves = Board.getLegalMoves(board);
+            int bestBoard = -1;
+            int bestMove = -1;
             int IDs[] = new int[moves.length];
             if (losing)
                 return moves[prng.nextInt(moves.length)];
             for (int i = 0; i < moves.length; i++) {
                 int rnd = prng.nextInt(moves.length - i) + i;
                 if (rnd > i) {
-                    Point tmp = moves[i];
-                    moves[i] = moves[rnd];
-                    moves[rnd] = tmp;
+                    moves[i] ^= moves[rnd];
+                    moves[rnd] ^= moves[i];
+                    moves[i] ^= moves[rnd];
                 }
-                Board curBoard = new Board(board);
-                IDs[i] = curBoard.stateID();
-                curBoard.play(moves[i], player);
+                int curBoard = Board.play(board, moves[i], player);
+                IDs[i] = Board.stateID(curBoard);
                 if (compareBoards(bestBoard, curBoard)) {
                     bestBoard = curBoard;
                     bestMove = moves[i];
                 }
             }
-            short score = getScores(bestBoard.stateID());
+            short score = getScores(Board.stateID(bestBoard));
             if (score == loss) {
                 for (int i = 0; i < IDs.length; i++) {
                     scores.remove(IDs[i]);
                 }
                 losing = true;
             } else
-                history[turn++] = bestBoard.stateID();
+                history[turn++] = Board.stateID(bestBoard);
             return bestMove;
         }
 

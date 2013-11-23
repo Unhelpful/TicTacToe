@@ -18,11 +18,15 @@ package us.looking_glass.tictactoe;
 
 
 public class Point {
-    public int x;
-    public int y;
+    static int point(int x, int y) {
+        return (x << 16) | (y & 0xffff);
+    }
 
-    public Point(int x, int y) {
-        this.x = x;
-        this.y = y;
+    static int x(int point) {
+        return point >> 16;
+    }
+
+    static int y(int point) {
+        return (point << 16) >> 16;
     }
 }

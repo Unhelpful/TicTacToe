@@ -16,11 +16,11 @@
 
 package us.looking_glass.tictactoe;
 
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-
 
 public class Board implements Serializable {
     private static final long serialVersionUID = 1;
@@ -29,23 +29,11 @@ public class Board implements Serializable {
     private static final String playerChars = " XO";
     private static final String playerCharsRep = "-XO#";
 
-    public Board(Board board) {
-        state = board.state;
-    }
-
-    public Board() {
-        state = 0;
-    }
-
-    public Board(int state) {
-        this.state = state;
-    }
-
-    public int getContents() {
+    public static int getContents(int state) {
         return state & contentsMask;
     }
 
-    private int getRowStart(int rowNum) {
+    private static int getRowStart(int rowNum) {
         switch (rowNum) {
             case 0:
                 return 0;
@@ -67,7 +55,7 @@ public class Board implements Serializable {
         return -1;
     }
 
-    private int getRowInc(int rowNum) {
+    private static int getRowInc(int rowNum) {
         switch (rowNum) {
             case 0:
             case 1:
@@ -85,7 +73,7 @@ public class Board implements Serializable {
         return -1;
     }
 
-    public byte countRow(int rowNum, int player) {
+    public static byte countRow(int state, int rowNum, int player) {
         byte count = 0;
         int offset = getRowStart(rowNum);
         int inc = getRowInc(rowNum);
@@ -97,22 +85,26 @@ public class Board implements Serializable {
         return count;
     }
 
-    public byte countPlayer(int player) {
-        int playerMask = 0x15555;
-        if (player == 2)
-            playerMask <<= 1;
-        return (byte) Integer.bitCount(getContents() & playerMask);
+    public static byte countPlayer(int state, int player) {
+        int playerMask = 0x15555 * player;
+        return (byte) Integer.bitCount(state & playerMask);
     }
 
-    public boolean checkWin(int player) {
+    public static int markWin(int state, int player) {
         for (int i = 0; i < 8; i++)
-            if (countRow(i, player) == 3)
-                return true;
-        return false;
+            if (countRow(state, i, player) == 3) {
+                int offset = 21 + (getRowStart(i) >> 1);
+                int inc = getRowInc(i) >> 1;
+                for (int j = 0; j < 3; j++) {
+                    state |= 1 << offset;
+                    offset += inc;
+                }
+            }
+        return state;
     }
 
-    public int countMoves() {
-        return Integer.bitCount(getContents());
+    public static int countMoves(int state) {
+        return Integer.bitCount(state & contentsMask);
     }
 
     private static int getOffset(int x, int y) {
@@ -121,23 +113,36 @@ public class Board implements Serializable {
         return (x << 1) + (y * 6);
     }
 
-    private Point getCoord(int offset) {
-        return new Point((offset % 6) / 2, offset / 6);
+    private static int getMarkOffset(int x, int y) {
+        return (getOffset(x, y) >> 1) + 21;
     }
 
-    public void play(int x, int y, int player) {
+    public static int play(int state, int x, int y, int player) {
         int offset = getOffset(x, y);
         if (((state >> offset) & 3) != 0)
             throw new IllegalArgumentException("Space already occupied");
         state |= player << offset;
+        return state;
     }
 
-    public void play(Point point, int player) {
-        play(point.x, point.y, player);
+    public static int play(int state, int point, int player) {
+        return play(state, Point.x(point), Point.y(point), player);
     }
 
-    public Point[] getLegalMoves() {
-        Point[] result = new Point[9];
+    private static int getCoord(int offset) {
+        return Point.point((offset % 6) / 2, offset / 6);
+    }
+
+    private static int getX(int offset) {
+        return (offset % 6) >> 1;
+    }
+
+    private static int getY(int offset) {
+        return offset / 6;
+    }
+
+    public static int[] getLegalMoves(int state) {
+        int[] result = new int[9];
         int count = 0;
         for (int offset = 0; offset < 18; offset += 2) {
             if (((state >> offset) & 3) == 0)
@@ -146,30 +151,16 @@ public class Board implements Serializable {
         return Arrays.copyOf(result, count);
     }
 
-    public Point[] getCanonicalLegalMoves() {
-        Set<Integer> seen = new HashSet<Integer>();
-        Point[] result = new Point[9];
-        int count = 0;
-        for (int offset = 0; offset < 18; offset += 2) {
-            if (((state >> offset) & 3) != 0) continue;
-            int newBoard = getContents() | (3 << offset);
-            int key = toCanonical(newBoard) & contentsMask;
-            if (seen.contains(key)) continue;
-            result[count++] = getCoord(offset);
-            seen.add(key);
-        }
-        return Arrays.copyOf(result, count);
+    public static boolean getMark(int state, int x, int y) {
+        return ((state >> getMarkOffset(x, y)) & 1) == 1;
+    }
+
+    public static boolean isMarked(int state) {
+        return (state >> 21) != 0;
     }
 
     public static int get(int state, int x, int y) {
         return (state >> getOffset(x, y)) & 3;
-    }
-    public int get(int x, int y) {
-        return get(state, x, y);
-    }
-
-    public String toString() {
-        return toString(getContents());
     }
 
     public static String toString(int state) {
@@ -236,20 +227,8 @@ public class Board implements Serializable {
         return minState | (transform << 18);
     }
 
-    public int stateID() {
-        return toCanonical(getContents()) & contentsMask;
-    }
-
-    public static void countBoards(Board board, Set<Integer> states, int turn) {
-        Point moves[] = board.getLegalMoves();
-        int player = (turn & 1) + 1;
-        for (int i = 0; i < moves.length; i++) {
-            Board cur = new Board(board);
-            cur.play(moves[i], player);
-            states.add(toCanonical(cur.state) & contentsMask);
-            if (turn < 7 && !board.checkWin(player))
-                countBoards(cur, states, turn + 1);
-        }
+    public static int stateID(int state) {
+        return toCanonical(getContents(state)) & contentsMask;
     }
 
 }

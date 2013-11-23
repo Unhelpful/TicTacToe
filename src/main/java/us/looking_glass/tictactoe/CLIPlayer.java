@@ -28,12 +28,12 @@ public class CLIPlayer extends Player implements Serializable {
     public CLIPlayer() {
     }
 
-    private static void prompt(Board board, int player) {
+    private static void prompt(int board, int player) {
         System.out.println("  0 1 2\n");
         for (int y = 0; y < 3; y++) {
             System.out.printf("%d ", y);
             for (int x = 0; x < 3; x++) {
-                System.out.print(playerChars.charAt(board.get(x, y)));
+                System.out.print(playerChars.charAt(Board.get(board, x, y)));
                 System.out.print(x == 2 ? "\n" : "|");
             }
             if (y == 2)
@@ -48,8 +48,8 @@ public class CLIPlayer extends Player implements Serializable {
     public PlayerInstance newPlayer(Game game, int player) {
         return new PlayerInstance(game, player) {
             @Override
-            public Point getMove() {
-                Board board = game().board();
+            public int getMove() {
+                int board = game().board();
                 int player = player();
                 BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
                 prompt(board, player);
@@ -58,18 +58,18 @@ public class CLIPlayer extends Player implements Serializable {
                     input = in.readLine().split("\\s+");
                 } catch (IOException e) {
                     e.printStackTrace();
-                    return null;
+                    return -1;
                 }
-                if (input.length != 2) return null;
+                if (input.length != 2) return -1;
                 try {
                     int y = Integer.parseInt(input[0]);
                     int x = Integer.parseInt(input[1]);
-                    if (board.get(x, y) != 0)
-                        return null;
+                    if (Board.get(board, x, y) != 0)
+                        return -1;
                     System.out.printf("Playing at %d,%d\n", x, y);
-                    return new Point(x, y);
+                    return Point.point(x, y);
                 } catch (IllegalArgumentException e) {
-                    return null;
+                    return -1;
                 }
             }
         };

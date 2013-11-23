@@ -18,19 +18,18 @@ package us.looking_glass.tictactoe;
 
 
 public class LMSRankPlayer extends LMSPlayerBase {
-    private static final long SerialVersionUID = 1;
+    private static final long serialVersionUID = 1;
 
     public LMSRankPlayer() {
         super(6);
     }
 
-    protected byte[] features(Board board) {
+    @Override
+    protected byte[] features(int board) {
         byte[] features = new byte[featureSize];
-        features[0] = (byte) board.countPlayer(1);
-        features[1] = (byte) board.countPlayer(2);
         for (int i = 0; i < 8; i++) {
-            int count1 = board.countRow(i, 1);
-            int count2 = board.countRow(i, 2);
+            int count1 = Board.countRow(board, i, 1);
+            int count2 = Board.countRow(board, i, 2);
             if (count2 == 0) {
                 switch (count1) {
                     case 3:

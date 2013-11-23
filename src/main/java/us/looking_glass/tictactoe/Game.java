@@ -25,7 +25,7 @@ public class Game implements Serializable {
     public static final byte P1_WIN = 1;
     public static final byte DRAW = 0;
     public static final byte P2_WIN = -1;
-    protected Board board = new Board();
+    protected int board = 0;
     protected byte status = PLAYING;
     protected byte currentPlayer = 1;
     protected byte turn = 0;
@@ -62,13 +62,10 @@ public class Game implements Serializable {
     public void play(int x, int y, int player) {
         if (player != currentPlayer)
             throw new IllegalArgumentException("Play out of turn");
-        board.play(x, y, player);
-        for (int i = 0; i < 8; i++) {
-            if (board.countRow(i, player) == 3) {
-                status = player == 1 ? P1_WIN : P2_WIN;
-                break;
-            }
-        }
+        board = Board.play(board, x, y, player);
+        board = Board.markWin(board, player);
+        if (Board.isMarked(board))
+            status = player == 1 ? P1_WIN : P2_WIN;
         turn++;
         currentPlayer = (byte) (3 - currentPlayer);
         if (status == PLAYING && turn == 9)
@@ -90,17 +87,17 @@ public class Game implements Serializable {
         }
     }
 
-    public void play(Point move, int player) {
-        play(move.x, move.y, player);
+    public void play(int move, int player) {
+        play(Point.x(move), Point.y(move), player);
     }
 
     public byte run(int turns) {
         while (status() == PLAYING && turns > 0) {
             Player.PlayerInstance state = currentPlayer == 1 ? player1 : player2;
-            Point move = null;
+            int move = -1;
             if (state != null)
                 move = state.getMove();
-            if (move == null)
+            if (move == -1)
                 return status();
             play(move, currentPlayer);
             turns--;
@@ -112,12 +109,12 @@ public class Game implements Serializable {
         return run(9);
     }
 
-    public Board board() {
+    public int board() {
         return board;
     }
 
     @Override
     public String toString() {
-        return String.format("Game(Board[%s] Turn[%d] Status[%d] P1[%s] P2[%s]", board(), turn(), status(), player1, player2);
+        return String.format("Game(Board[%s] Turn[%d] Status[%d] P1[%s] P2[%s]", Board.toString(board()), turn(), status(), player1, player2);
     }
 }

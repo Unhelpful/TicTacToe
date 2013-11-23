@@ -63,8 +63,8 @@ public class Player implements Serializable {
             return player;
         }
 
-        public Point getMove() {
-            return null;
+        public int getMove() {
+            return -1;
         }
 
         public void finish(int status) {
