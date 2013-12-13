@@ -148,7 +148,13 @@ public class Board implements Serializable {
             if (((state >> offset) & 3) == 0)
                 result[count++] = getCoord(offset);
         }
-        return Arrays.copyOf(result, count);
+        if (count < 9) {
+            int[] tmp = new int[count];
+            for (int i = 0; i < count; i++)
+                tmp[i] = result[i];
+            result = tmp;
+        }
+        return result;
     }
 
     public static boolean getMark(int state, int x, int y) {
